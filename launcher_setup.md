@@ -4,7 +4,7 @@
 ### 1. Create a new Launcher as a placeholder
 
 * On the left nav go to Publish --> Launchers
-* Give the Launcher a name and click Save Launcher
+* Create a new launcher, give it a name, and click Save Launcher
 
 ### 2. Use the config file to update the Launcher
 
