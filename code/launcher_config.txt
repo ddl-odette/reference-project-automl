@@ -1,0 +1,93 @@
+{
+  "name" : "AutoML",
+  "valuePassType" : "CommandLineSubstitutionPass",
+  "description" : "Runs TPOT based AutoML classification/regression tasks on data in a CSV file.",
+  "hardwareTierId" : "",
+  "parameters" : [ {
+    "name" : "filename",
+    "description" : "CSV data",
+    "allowedValues" : [ {
+      "value" : ""
+    } ],
+    "shouldQuoteValue" : true,
+    "parameterType" : "File",
+    "defaultValue" : ""
+  }, {
+    "name" : "target",
+    "description" : "(integer) Position of column containing target attribute. -1 indicates the last column.",
+    "allowedValues" : [ ],
+    "shouldQuoteValue" : true,
+    "parameterType" : "Text",
+    "defaultValue" : ""
+  }, {
+    "name" : "task",
+    "description" : "Task type",
+    "allowedValues" : [ {
+      "value" : "classification"
+    }, {
+      "value" : "regression"
+    } ],
+    "shouldQuoteValue" : true,
+    "parameterType" : "Select",
+    "defaultValue" : ""
+  }, {
+    "name" : "verbose",
+    "description" : "Verbose output in the log files",
+    "allowedValues" : [ {
+      "value" : "classification"
+    }, {
+      "value" : "regression"
+    } ],
+    "shouldQuoteValue" : true,
+    "parameterType" : "Checkbox",
+    "defaultValue" : "true"
+  }, {
+    "name" : "header",
+    "description" : "CSV file contains header",
+    "allowedValues" : [ ],
+    "shouldQuoteValue" : true,
+    "parameterType" : "Checkbox",
+    "defaultValue" : "true"
+  }, {
+    "name" : "separator",
+    "description" : "Value separator in the CSV file",
+    "allowedValues" : [ {
+      "value" : "comma"
+    }, {
+      "value" : "tab"
+    }, {
+      "value" : "space"
+    }, {
+      "value" : "white_spaces"
+    } ],
+    "shouldQuoteValue" : true,
+    "parameterType" : "MultiSelect",
+    "defaultValue" : ""
+  }, {
+    "name" : "missing",
+    "description" : "Missing values treatment",
+    "allowedValues" : [ {
+      "value" : "drop"
+    }, {
+      "value" : "infer"
+    } ],
+    "shouldQuoteValue" : true,
+    "parameterType" : "Select",
+    "defaultValue" : ""
+  }, {
+    "name" : "test",
+    "description" : "(float) Test set size",
+    "allowedValues" : [ ],
+    "shouldQuoteValue" : true,
+    "parameterType" : "Text",
+    "defaultValue" : "0.2"
+  }, {
+    "name" : "valid",
+    "description" : "(float) Validation set size",
+    "allowedValues" : [ ],
+    "shouldQuoteValue" : true,
+    "parameterType" : "Text",
+    "defaultValue" : "0.2"
+  } ],
+  "command" : "code/automl.py --file ${filename} --target ${target} --task ${task} --verbose ${verbose} --header ${header} --sep ${separator} --missing ${missing} --test ${test} --valid ${valid}"
+}
