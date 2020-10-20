@@ -34,10 +34,20 @@ def cleanup(directory):
         except OSError as e:
             print ("Error: %s - %s." % (e.filename, e.strerror))
 
-def load_csv(filename, header, sep):
+def load_csv(filename, localfile, discardfeatures, header, sep):
     header = 0 if header else None
-    separators = {"comma":",", "tab":r"\t", "space":r"\s", "white_spaces":r"\s+"}
-    data_df = pd.read_csv(filename, sep=separators.get(sep), header=header, error_bad_lines=False)
+    separators = {"comma":",", "tab":r"\t", "space":r"\s", "white_spaces":r"\s+","colon":";"}
+
+    if len(filename) == 0:
+        data_df = pd.read_csv(localfile, sep=separators.get(sep), header=header, error_bad_lines=False)
+    else:
+        data_df = pd.read_csv(filename, sep=separators.get(sep), header=header, error_bad_lines=False)
+
+    for feature in discardfeatures:
+        if feature > data_df.shape[1]-1:
+            raise ValueError('discarded feature index out dataframe dimesion - df.shape[1]')
+
+    data_df.drop(data_df.columns[discardfeatures], axis=1, inplace=True)
     
     verboseprint("Loaded file %s with dimensions %s" % (filename, data_df.shape))
     verboseprint("Data types:\n")
@@ -46,7 +56,7 @@ def load_csv(filename, header, sep):
     
     return data_df
 
-def plot_roc(fpr, tpr, roc_auc, filename):
+def plot_roc(fpr, tpr, roc_auc, output_dir):
     plt.title("Receiver Operating Characteristic")
     plt.plot(fpr, tpr, 'b', label = "AUC = %0.2f" % roc_auc)
     plt.legend(loc = "lower right")
@@ -55,11 +65,30 @@ def plot_roc(fpr, tpr, roc_auc, filename):
     plt.ylim([0, 1])
     plt.ylabel("True Positive Rate")
     plt.xlabel("False Positive Rate")
-    plt.savefig(filename + "_roc.png")
+    plt.savefig(output_dir + "_roc.png")
 
 
-def run_automl(filename, header, sep, target, task, missing, test, validation, seed, output_dir, tmp_dir):
-    data_df = load_csv(filename, header, sep)
+def run_automl(filename, localfile, discardfeatures, header, sep, target, task, missing, test, validation, seed, output_dir, tmp_dir):
+    try:
+        discardfeatures = eval(discardfeatures)
+    except:
+        discardfeatures = []
+        
+    for feature in discardfeatures:
+        if feature < 0:
+            raise ValueError('discarded features indices should be greater than or equal to 0')
+
+    data_df = load_csv(filename, localfile, discardfeatures, header, sep)
+
+    if target > 0: # if features are discarded target index can change unless its '0' or a '-1'
+        for feature in discardfeatures:
+            if feature < target:
+                target -= 1
+
+    if target < -1:
+        for feature in discardfeatures:
+            if feature > data_df.shape[1]+target:
+                target += 1
     
     object_dt = [ col  for col, dt in data_df.dtypes.items() if dt == object]
     if len(object_dt) > 0:
@@ -93,17 +122,17 @@ def run_automl(filename, header, sep, target, task, missing, test, validation, s
         tpot = TPOTRegressor(generations=5, population_size=50, verbosity=2, random_state=42)
         tpot.fit(X_train, y_train)
         print("Final score: ", tpot.score(X_test, y_test))
-        tpot.export(filename + "_regression_pipeline.py")
+        tpot.export(output_dir + "_regression_pipeline.py")
     elif task == "classification":
         tpot = TPOTClassifier(generations=5, population_size=50, verbosity=2, random_state=42)
         tpot.fit(X_train, y_train)
         #print("Final score: ", tpot.score(X_test, y_test))
-        tpot.export(filename + "_classification_pipeline.py")
+        tpot.export(output_dir + "_classification_pipeline.py")
         pred = tpot.predict(X_test)
         tn, fp, fn, tp = confusion_matrix(y_test, pred).ravel()
         fpr, tpr, threshold = roc_curve(y_test, pred)
         roc_auc = auc(fpr, tpr)
-        plot_roc(fpr, tpr, roc_auc, filename)
+        plot_roc(fpr, tpr, roc_auc, output_dir)
         print("True positive: %i" % tp)
         print("False positive: %i" % fp)
         print("True negative: %i" % tn)
@@ -125,26 +154,29 @@ if __name__ == "__main__":
         return x
 
     parser = argparse.ArgumentParser(description="AutoML script using auto-sklearn. (C) 2020 Nikolay Manchev, Domino Data Lab")
-    parser.add_argument("--file", type=str, required=True, help="a CSV file containing the dataset")
+    parser.add_argument("--file", type=str, required=False, help="a CSV file containing the dataset")
+    parser.add_argument("--localfile", type=str, required=False, help="path to local DFS file",default="/mnt/data/raw/heart.csv")
+    parser.add_argument("--discardfeatures",type=str,required=False,help="features (list of indices) to discard in training",default=[])  
     parser.add_argument("--target", type=int, required=True, help="target variable column index")
     parser.add_argument("--task", type=str, required=True, help="task type", choices=["classification", "regression"], default="classification")
     parser.add_argument("--verbose", type=bool, required=False, help="output additional information", default=True)
     parser.add_argument("--header", type=bool, required=False, help="the first row contains a header", default=False)
-    parser.add_argument("--sep", type=str, required=False, help="delimiter to use", default="comma", choices=["comma", "tab", "space", "white_spaces"])
+    parser.add_argument("--sep", type=str, required=False, help="delimiter to use", default="comma", choices=["comma", "tab", "space", "white_spaces","colon"])
     parser.add_argument("--missing", type=str, required=False, help="missing values treatment", choices=["drop", "infer"], default="infer")
     parser.add_argument("--test", type=restricted_float, required=False, help="size of the test test (0,1)", default=0.2)
     parser.add_argument("--valid", type=restricted_float, required=False, help="size of the validation set (0,1)", default=0.2)
     parser.add_argument("--seed", type=int, required=False, help="random seed used for sampling and fitting", default=1234)
-    parser.add_argument("--output", type=str, required=False, help="default output directory", default="output")
+    parser.add_argument("--output", type=str, required=False, help="default output directory", default="/mnt/results/myrun")
     parser.add_argument("--tmp", type=str, required=False, help="temporary directory", default="tmp")
 
     args = parser.parse_args()
 
     verboseprint = print if args.verbose else lambda *a, **k: None
 
-    output_dir = os.getcwd() + os.sep + args.output
+    # output_dir = os.getcwd() + os.sep + args.output
+    output_dir = args.output
     tmp_dir = os.getcwd() + os.sep + args.tmp
 
     
-    run_automl(args.file, args.header, args.sep, args.target, args.task, args.missing, 
+    run_automl(args.file, args.localfile, args.discardfeatures, args.header, args.sep, args.target, args.task, args.missing, 
                args.test, args.valid, args.seed, output_dir, tmp_dir)
