@@ -1,4 +1,4 @@
-*Disclaimer - Domino Reference Projects are starter kits built by Domino researchers showing how to do various analytics in Domino. They are not part of Domino's product, and are not supported by Domino's support team. Once loaded into your Domino environemnt, they are yours to manage. Feel free to copy them as a template or to improve them as you see fit. We hope they will be a beneficial tool in your analytical journey! 
+*Disclaimer - Domino Reference Projects are starter kits built by Domino researchers. They are not officially supported by Domino. Once loaded, they are yours to use or modify as you see fit. We hope they will be a beneficial tool on your journey! 
 
 ## Welcome to the Domino Reference Project for...
 
@@ -11,17 +11,17 @@ There are many proprietary and open source AutoML tools available. This project 
 
 ## Project Contents
 
-* [auto-sklearn.ipynb](./view/code/auto-sklearn.ipynb), a how-to notebook
-* [tpot.ipynb](./view/code/tpot.ipynb), a how-to notebook
-* [mlbox.ipynb](./view/code/MLBox.ipynb), a how-to notebook
-* AutoML Launcher, associated [configuration file](./view/code/launcher_config.txt), and [launcher set up doc](./view/launcher_setup.md)
-* [automl.py](./view/code/automl.py), the code behind the Launcher
+* [auto-sklearn.ipynb](./view/auto-sklearn.ipynb), a how-to notebook
+* [tpot.ipynb](./view/tpot.ipynb), a how-to notebook
+* [mlbox.ipynb](./view/MLBox.ipynb), a how-to notebook
+* AutoML Launcher, associated [configuration file](./view/launcher_config.txt), and [launcher set up doc](./view/launcher_setup.md)
+* [automl.py](./view/automl.py), the code behind the Launcher
 * sample data files
 
 ## Suggested Actions
 
-* Click on Files to view the notebooks and data associated with this project.
-* Fork or Copy this project to run the notebooks on your own. 
+* Browse the notebooks. They are writen as tutorials on how to use the various automl packages.
+* Copy or Fork this project to run the notebooks on your own. 
 * Follow the instructions in the [launcher set up doc](./view/launcher_setup.md) to create your own AutoML Launcher.
 
 ## Reference Material
@@ -32,4 +32,13 @@ Check out this [spreadsheet](https://docs.google.com/spreadsheets/d/1KVtbJfBcjnh
 
 Each of the jupyter notebooks listed above has additional links to reference material.
 
- 
+## Prerequisites
+
+This project uses standard python libraries and any base Domino image should work well. The last test was done on standard-environment:ubuntu18-py3.8-r4.1-domino5.1. The additional Python libraries needed are shap, lime, and pycebox. You can simply install them in the cell provided when running the notebook interactively. Alternatively, you can add them to a custom compute environment by appending the following lines to the standard-environment:ubuntu18-py3.8-r4.1-domino5.1 dockerfile:
+
+RUN echo "ubuntu    ALL=NOPASSWD: ALL" >> /etc/sudoers
+RUN pip install --upgrade pip
+RUN pip install pycebox \
+                lime \
+                shap
+There are several additional R libraries needed to run rtemis. This library changes frequently, sometimes breaking dependencies, so we do not advise building a compute environment for the current dependencies. See the R scipt included in this project for details.
