@@ -34,11 +34,3 @@ Each of the jupyter notebooks listed above has additional links to reference mat
 
 ## Prerequisites
 
-This project uses standard python libraries and any base Domino image should work well. The last test was done on standard-environment:ubuntu18-py3.8-r4.1-domino5.1. The additional Python libraries needed are shap, lime, and pycebox. You can simply install them in the cell provided when running the notebook interactively. Alternatively, you can add them to a custom compute environment by appending the following lines to the standard-environment:ubuntu18-py3.8-r4.1-domino5.1 dockerfile:
-
-RUN echo "ubuntu    ALL=NOPASSWD: ALL" >> /etc/sudoers
-RUN pip install --upgrade pip
-RUN pip install pycebox \
-                lime \
-                shap
-There are several additional R libraries needed to run rtemis. This library changes frequently, sometimes breaking dependencies, so we do not advise building a compute environment for the current dependencies. See the R scipt included in this project for details.
