@@ -1,3 +1,12 @@
+#-----------UNDER CONSTRUCTION-------------
+MLBOX is no longer being maintained. Need to remove.
+Auto-sklearn has a new verion out. Need to update notebooks.
+Tpot also has updates that need to be incorporated.
+Both use dask for parallelization now.
+#------------------------------------------
+
+
+
 *Disclaimer - Domino Reference Projects are starter kits built by Domino researchers. They are not officially supported by Domino. Once loaded, they are yours to use or modify as you see fit. We hope they will be a beneficial tool on your journey! 
 
 ## Welcome to the Domino Reference Project for...
