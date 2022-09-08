@@ -6,6 +6,7 @@ import sys
 import os
 
 import autosklearn.classification
+import autosklearn.regression
 import sklearn.model_selection
 import sklearn.metrics
 import pandas as pd
@@ -59,7 +60,7 @@ def load_csv(filename, header, sep):
 def run_autosklearn(filename, target, task, header, sep, holdout, seed, output_dir, tmp_dir, time_for_task, per_run_time_limit, ensemble_size, ensemble_nbest, max_models_on_disc, memory_limit, include, exclude, resampling_strategy, resampling_strategy_arguments, metric, scoring_functions):
 
     df = load_csv(filename, header, sep)
-    
+        
     X = df.drop(df[[target]], axis=1)
     y = df[target]
     

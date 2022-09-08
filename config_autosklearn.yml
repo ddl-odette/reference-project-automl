@@ -19,5 +19,5 @@ time_left_for_this_task: 40
 # exclude: 
 # resampling_strategy:
 # resampling_strategy_arguments: 
-metric: 'roc_auc'
-scoring_functions: [log_loss, roc_auc, f1]
+metric: 'mean_squared_error'
+scoring_functions: [mean_absolute_error, mean_squared_error]
