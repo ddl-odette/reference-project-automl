@@ -4,6 +4,7 @@ warnings.filterwarnings("ignore")
 import configargparse
 import sys
 import os
+import yaml
 
 import autosklearn.classification
 import autosklearn.regression
@@ -58,7 +59,9 @@ def load_csv(filename, header, sep):
     return df
 
 def run_autosklearn(filename, target, task, header, sep, holdout, seed, time_for_task, per_run_time_limit, ensemble_size, ensemble_nbest, max_models_on_disc, memory_limit, include, exclude, resampling_strategy, resampling_strategy_arguments, metric, scoring_functions):
-
+    
+    print(resampling_strategy_arguments)
+    
     df = load_csv(filename, header, sep)
         
     X = df.drop(df[[target]], axis=1)
@@ -84,7 +87,7 @@ def run_autosklearn(filename, target, task, header, sep, holdout, seed, time_for
             ensemble_size=ensemble_size,
             ensemble_nbest = ensemble_nbest,
             max_models_on_disc = max_models_on_disc,
-            include = {'classifier': ['random_forest']},
+            include = include,
             exclude=exclude,
             resampling_strategy= resampling_strategy,
             resampling_strategy_arguments = resampling_strategy_arguments,
@@ -136,6 +139,19 @@ def run_autosklearn(filename, target, task, header, sep, holdout, seed, time_for
 
     with open('dominostats.json', 'w') as f:
         f.write(json.dumps( {metric_out_name : metric_out}))
+        
+    automl_results = pd.DataFrame.from_dict(automl.cv_results_, orient='columns')
+    
+    # print(automl_results.columns)
+    
+    # automl_results = automl_results[['mean_test_score', 'metric_log_loss',
+    #                              'metric_roc_auc', 'metric_f1',
+    #                              'mean_fit_time', 'params', 'rank_test_scores']]
+    
+    automl_results = automl_results.iloc[:, :10].sort_values(by='rank_test_scores', ascending=True)
+
+    print(automl_results.head(20))
+
     
 
 if __name__ == "__main__":
@@ -244,13 +260,13 @@ if __name__ == "__main__":
                         default=3072)
     
     parser.add_argument("--include",
-                        type=dict,
+                        type=str,
                         required=False, 
                         help="Auto-sklearn: If None, all possible algorithms are used. Otherwise, specifies a step and the components that are included in search",
                         default=None)
     
     parser.add_argument("--exclude",
-                        type=dict,
+                        type=str,
                         required=False, 
                         help="Auto-sklearn: If None, all possible algorithms are used. Otherwise, specifies a step and the components that are excluded from search",
                         default=None)
@@ -263,7 +279,7 @@ if __name__ == "__main__":
                         choices=["holdout", "holdout-iterative-fit", "cv", "cv-iterative-fit","partial-cv"])
         
     parser.add_argument("--resampling_strategy_arguments",
-                        type=dict,
+                        type=str,
                         required=False, 
                         help="Auto-sklearn: Additional arguments for resampling_strategy",
                         default=None,)
@@ -297,12 +313,26 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     
+    # Parse dictionary inputs from config
+    if args.include:
+        include = yaml.safe_load(args.include)
+    else:
+        include = None
+    
+    if args.exclude:
+        exclude = yaml.safe_load(args.exclude)
+    else:
+        exclude = None
+        
+    if args.resampling_strategy_arguments:
+        resampling_strategy_arguments = yaml.safe_load(args.resampling_strategy_arguments)
+    else:
+        resampling_strategy_arguments = None
+    
     # output_dir = args.output_dir
     # tmp_dir = os.getcwd() + os.sep + args.tmp_dir
     
     verboseprint = print if args.verbose else lambda *a, **k: None
-    
-    print(args.include)
         
     run_autosklearn(filename = args.file,
                     target = args.target,
@@ -317,10 +347,10 @@ if __name__ == "__main__":
                     ensemble_nbest = args.ensemble_nbest,
                     max_models_on_disc = args.max_models_on_disc,
                     memory_limit = args.memory_limit,
-                    include = args.include,
-                    exclude = args.exclude,
+                    include = include,
+                    exclude = exclude,
                     resampling_strategy = args.resampling_strategy,
-                    resampling_strategy_arguments = args.resampling_strategy_arguments,
+                    resampling_strategy_arguments = resampling_strategy_arguments,
                     metric = args.metric,
                     scoring_functions = args.scoring_functions,
                     # output_dir = output_dir,
