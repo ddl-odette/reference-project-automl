@@ -57,7 +57,7 @@ def load_csv(filename, header, sep):
     
     return df
 
-def run_autosklearn(filename, target, task, header, sep, holdout, seed, output_dir, tmp_dir, time_for_task, per_run_time_limit, ensemble_size, ensemble_nbest, max_models_on_disc, memory_limit, include, exclude, resampling_strategy, resampling_strategy_arguments, metric, scoring_functions):
+def run_autosklearn(filename, target, task, header, sep, holdout, seed, time_for_task, per_run_time_limit, ensemble_size, ensemble_nbest, max_models_on_disc, memory_limit, include, exclude, resampling_strategy, resampling_strategy_arguments, metric, scoring_functions):
 
     df = load_csv(filename, header, sep)
         
@@ -84,13 +84,14 @@ def run_autosklearn(filename, target, task, header, sep, holdout, seed, output_d
             ensemble_size=ensemble_size,
             ensemble_nbest = ensemble_nbest,
             max_models_on_disc = max_models_on_disc,
-            include = include,
+            include = {'classifier': ['random_forest']},
             exclude=exclude,
             resampling_strategy= resampling_strategy,
             resampling_strategy_arguments = resampling_strategy_arguments,
             seed = seed,
             metric=scorer,
             scoring_functions = scoring_functions,
+            initial_configurations_via_metalearning=0,
             n_jobs=-1
         )
     
@@ -166,7 +167,7 @@ if __name__ == "__main__":
     parser.add_argument("--file",
                         type=str,
                         required=False,
-                        help="Path to local file", 
+                        help="Path to training data", 
                         default="./data/raw/heart.csv")
     
     parser.add_argument("--target",
@@ -280,26 +281,28 @@ if __name__ == "__main__":
                         help="Auto-sklearn: List of scorers which will be calculated for each pipeline and results will be available via cv_results",
                         default=None)
     
-    parser.add_argument("--output",
-                        type=str,
-                        required=False, 
-                        help="Default output directory",
-                        default="./results/myrun")
+#     parser.add_argument("--output_dir",
+#                         type=str,
+#                         required=False, 
+#                         help="Default output directory",
+#                         default="./results/myrun")
     
-    parser.add_argument("--tmp",
-                        type=str,
-                        required=False,
-                        help="Temporary directory",
-                        default="tmp")
+#     parser.add_argument("--tmp_dir",
+#                         type=str,
+#                         required=False,
+#                         help="Temporary directory",
+#                         default="tmp")
     
     parser.add_argument("--verbose", type=bool, required=False, help="Output additional information", default=True)
 
     args = parser.parse_args()
     
-    output_dir = args.output
-    tmp_dir = os.getcwd() + os.sep + args.tmp
+    # output_dir = args.output_dir
+    # tmp_dir = os.getcwd() + os.sep + args.tmp_dir
     
     verboseprint = print if args.verbose else lambda *a, **k: None
+    
+    print(args.include)
         
     run_autosklearn(filename = args.file,
                     target = args.target,
@@ -320,6 +323,6 @@ if __name__ == "__main__":
                     resampling_strategy_arguments = args.resampling_strategy_arguments,
                     metric = args.metric,
                     scoring_functions = args.scoring_functions,
-                    output_dir = output_dir,
-                    tmp_dir = tmp_dir
+                    # output_dir = output_dir,
+                    # tmp_dir = tmp_dir
                    )

@@ -1,23 +1,23 @@
 # Config yaml for Autosklearn run
 
 file: './data/raw/diabetes.csv'
-target: 'Age'
-task: regression
+target: 'Outcome'
+task: classification
 header: 1
-# sep:
-# holdout:
-# seed:
-# output_dir:
-# tmp_dir:
+sep: 'comma'
+holdout: 0.2
+seed: 42
 time_left_for_this_task: 40
 # per_run_time_limit:
-# ensemble_size:
-# ensemble_nbest: 
-# max_models_on_disc: 
-# memory_limit: 
-# include: 
+# ensemble_size: 5
+# ensemble_nbest: 5
+max_models_on_disc: 20
+memory_limit: 6144
+# include:
+#   'regressor': ["random_forest"]
+#   'feature_preprocessor': ["no_preprocessing"]
 # exclude: 
 # resampling_strategy:
 # resampling_strategy_arguments: 
-metric: 'mean_squared_error'
+metric: 'roc_auc'
 scoring_functions: [mean_absolute_error, mean_squared_error]
