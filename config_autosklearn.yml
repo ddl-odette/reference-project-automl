@@ -1,8 +1,8 @@
 # Config yaml for Autosklearn run
 
 file: './data/raw/diabetes.csv'
-target: Age
-task: regression
+target: Outcome
+task: classification
 header: 1
 sep: comma
 holdout: 0.2
@@ -24,5 +24,5 @@ time_left_for_this_task: 40
   # train_size:
   # shuffle:
   # folds:
-metric: mean_squared_error
-scoring_functions: [mean_absolute_error, mean_squared_error]
+metric: log_loss
+scoring_functions: [roc_auc, log_loss]

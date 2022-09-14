@@ -2,8 +2,8 @@ import warnings
 warnings.filterwarnings("ignore")
 
 import configargparse
-import sys
-import os
+# import sys
+# import os
 import yaml
 
 import autosklearn.classification
@@ -11,7 +11,7 @@ import autosklearn.regression
 import sklearn.model_selection
 import sklearn.metrics
 import pandas as pd
-import numpy as np
+# import numpy as np
 
 from joblib import dump, load
 import json
@@ -115,7 +115,7 @@ def run_autosklearn(filename, target, task, header, sep, holdout, seed, time_for
             n_jobs=-1
             )
 
-    automl.fit(X_train, y_train)
+    automl.fit(X_train, y_train, X_test=X_test, y_test=y_test)
 
     #save the predicitons
     predictions = automl.predict(X_test)
@@ -123,9 +123,11 @@ def run_autosklearn(filename, target, task, header, sep, holdout, seed, time_for
     if task == 'classification':
         metric_out = sklearn.metrics.roc_auc_score(y_test, predictions)
         metric_out_name ='roc_auc'
+        output_col_name = 'param_classifier:__choice__'
     elif task == 'regression':
         metric_out = sklearn.metrics.mean_squared_error(y_test, predictions)
-        metric_out_name ='RMSE'
+        metric_out_name ='Mean Squared Error'
+        output_col_name = 'param_regressor:__choice__'
     
     print('Sprint Stats:')
     print(automl.sprint_statistics())
@@ -142,16 +144,13 @@ def run_autosklearn(filename, target, task, header, sep, holdout, seed, time_for
         
     automl_results = pd.DataFrame.from_dict(automl.cv_results_, orient='columns')
     
-    # print(automl_results.columns)
+    cols_to_print = ['rank_test_scores', 'mean_test_score', output_col_name]
+    user_metrics = [c for c in automl_results.columns if 'metric_' in c]
+    cols_to_print.extend(user_metrics)
+        
+    verboseprint(automl_results[cols_to_print].sort_values(by='rank_test_scores', ascending=True).head(20))
     
-    # automl_results = automl_results[['mean_test_score', 'metric_log_loss',
-    #                              'metric_roc_auc', 'metric_f1',
-    #                              'mean_fit_time', 'params', 'rank_test_scores']]
-    
-    automl_results = automl_results.iloc[:, :10].sort_values(by='rank_test_scores', ascending=True)
-
-    print(automl_results.head(20))
-
+    automl_results.to_csv('results/automl_results.csv', index=False)
     
 
 if __name__ == "__main__":
@@ -312,7 +311,7 @@ if __name__ == "__main__":
     parser.add_argument("--verbose", type=bool, required=False, help="Output additional information", default=True)
 
     args = parser.parse_args()
-    
+        
     # Parse dictionary inputs from config
     if args.include:
         include = yaml.safe_load(args.include)
