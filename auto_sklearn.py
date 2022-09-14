@@ -134,9 +134,9 @@ def run_autosklearn(filename, target, task, header, sep, holdout, seed, time_for
     print('Holdout score (' + metric_out_name + '):')
     print(metric_out)
     
-    dump(automl, '.mnt/artifacts/automl.joblib')
+    dump(automl, 'mnt/artifacts/automl.joblib')
 
-    with open('dominostats.json', 'w') as f:
+    with open('mnt/artifacts/dominostats.json', 'w') as f:
         f.write(json.dumps( {metric_out_name : metric_out}))
         
     automl_results = pd.DataFrame.from_dict(automl.cv_results_, orient='columns')
@@ -147,7 +147,7 @@ def run_autosklearn(filename, target, task, header, sep, holdout, seed, time_for
         
     verboseprint(automl_results[cols_to_print].sort_values(by='rank_test_scores', ascending=True).head(20))
     
-    automl_results.to_csv('.mnt/artifacts/automl_results.csv', index=False)
+    automl_results.to_csv('mnt/artifacts/automl_results.csv', index=False)
     
 
 if __name__ == "__main__":
