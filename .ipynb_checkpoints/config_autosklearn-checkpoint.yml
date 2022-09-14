@@ -1,8 +1,8 @@
 # Config yaml for Autosklearn run
 
-file: './data/raw/diabetes.csv'
-target: Outcome
-task: classification
+file: './data/raw/melbourne_housing.csv'
+target: price
+task: regression
 header: 1
 sep: comma
 holdout: 0.2
@@ -19,10 +19,10 @@ time_left_for_this_task: 40
   # feature_preprocessor:
   #   - no_preprocessing
 # exclude:
-# resampling_strategy:
-# resampling_strategy_arguments:
-  # train_size:
-  # shuffle:
-  # folds:
-metric: log_loss
-scoring_functions: [roc_auc, log_loss]
+resampling_strategy: cv
+resampling_strategy_arguments:
+  train_size: 0.8
+  shuffle: True
+  folds: 5
+metric: mean_squared_error
+scoring_functions: [mean_squared_error, mean_absolute_error, r2]
