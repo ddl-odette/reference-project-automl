@@ -2,8 +2,6 @@ import warnings
 warnings.filterwarnings("ignore")
 
 import configargparse
-# import sys
-# import os
 import yaml
 
 import autosklearn.classification
@@ -11,7 +9,6 @@ import autosklearn.regression
 import sklearn.model_selection
 import sklearn.metrics
 import pandas as pd
-# import numpy as np
 
 from joblib import dump, load
 import json
@@ -137,7 +134,7 @@ def run_autosklearn(filename, target, task, header, sep, holdout, seed, time_for
     print('Holdout score (' + metric_out_name + '):')
     print(metric_out)
     
-    dump(automl, 'automl.joblib')
+    dump(automl, '.mnt/artifacts/automl.joblib')
 
     with open('dominostats.json', 'w') as f:
         f.write(json.dumps( {metric_out_name : metric_out}))
@@ -150,7 +147,7 @@ def run_autosklearn(filename, target, task, header, sep, holdout, seed, time_for
         
     verboseprint(automl_results[cols_to_print].sort_values(by='rank_test_scores', ascending=True).head(20))
     
-    automl_results.to_csv('results/automl_results.csv', index=False)
+    automl_results.to_csv('.mnt/artifacts/automl_results.csv', index=False)
     
 
 if __name__ == "__main__":
