@@ -48,19 +48,22 @@ def load_csv(filename, header, sep):
 
     df = pd.read_csv(filename, sep=separators.get(sep), header=header, error_bad_lines=False)
 
-    verboseprint("Loaded file %s with dimensions %s" % (filename, df.shape))
-    verboseprint("Data types:\n")
-    verboseprint(df.dtypes)
-    verboseprint(df.head())
+    print("Loaded file %s with dimensions %s" % (filename, df.shape))
+    print("Data types:\n")
+    print(df.dtypes)
+    print(df.head())
     
     return df
 
 def run_autosklearn(filename, target, task, header, sep, holdout, seed, time_for_task, per_run_time_limit, ensemble_size, ensemble_nbest, max_models_on_disc, memory_limit, include, exclude, resampling_strategy, resampling_strategy_arguments, metric, scoring_functions):
     
-    print(resampling_strategy_arguments)
-    
     df = load_csv(filename, header, sep)
-        
+    
+    print(filename)
+    print(target)
+    print(task)
+    _ = [print(c) for c in df.columns]
+    
     X = df.drop(df[[target]], axis=1)
     y = df[target]
     
@@ -68,15 +71,21 @@ def run_autosklearn(filename, target, task, header, sep, holdout, seed, time_for
     
     if per_run_time_limit == None:
         per_run_time_limit = int(time_for_task / 10)
-
-    scorer = autosklearn_metrics[metric]
     
-    for idx, s in enumerate(scoring_functions):
-        scoring_functions[idx] = autosklearn_metrics[s[0]]        
+    if scoring_functions:
+        for idx, s in enumerate(scoring_functions):
+            scoring_functions[idx] = autosklearn_metrics[s[0]]
+    else:
+        pass
 
     task = task.lower()
         
     if task=='classification':
+        
+        if metric:
+            scorer = autosklearn_metrics[metric]
+        else:
+            scorer = autosklearn.metrics.log_loss
 
         automl = autosklearn.classification.AutoSklearnClassifier(
             time_left_for_this_task=time_for_task,
@@ -96,6 +105,12 @@ def run_autosklearn(filename, target, task, header, sep, holdout, seed, time_for
         )
     
     elif task == 'regression':
+        
+        if metric:
+            scorer = autosklearn_metrics[metric]
+        else:
+            scorer = autosklearn.metrics.mean_squared_error
+        
         automl = autosklearn.regression.AutoSklearnRegressor(
             time_left_for_this_task=time_for_task,
             per_run_time_limit=per_run_time_limit,
@@ -112,7 +127,7 @@ def run_autosklearn(filename, target, task, header, sep, holdout, seed, time_for
             n_jobs=-1
             )
 
-    automl.fit(X_train, y_train, X_test=X_test, y_test=y_test)
+    automl.fit(X_train, y_train)
 
     #save the predicitons
     predictions = automl.predict(X_test)
@@ -145,7 +160,7 @@ def run_autosklearn(filename, target, task, header, sep, holdout, seed, time_for
     user_metrics = [c for c in automl_results.columns if 'metric_' in c]
     cols_to_print.extend(user_metrics)
         
-    verboseprint(automl_results[cols_to_print].sort_values(by='rank_test_scores', ascending=True).head(20))
+    print(automl_results[cols_to_print].sort_values(by='rank_test_scores', ascending=True).head(20))
     
     automl_results.to_csv('/mnt/artifacts/automl_results.csv', index=False)
     
@@ -328,7 +343,7 @@ if __name__ == "__main__":
     # output_dir = args.output_dir
     # tmp_dir = os.getcwd() + os.sep + args.tmp_dir
     
-    verboseprint = print if args.verbose else lambda *a, **k: None
+    # verboseprint = print if args.verbose else lambda *a, **k: None
         
     run_autosklearn(filename = args.file,
                     target = args.target,
